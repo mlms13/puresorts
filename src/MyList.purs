@@ -20,11 +20,16 @@ nil = Nil
 
 infixr 6 cons as :
 
+filter :: ∀ a. (a -> Boolean) -> MyList a -> MyList a
+filter p =
+  foldl (\acc curr -> if p curr then curr : acc else acc) nil
+
 bisect :: ∀ a. MyList a -> { left :: MyList a, right :: MyList a }
 bisect l =
   { left : f.left, right: f.right }
   where
     f = foldl split { left : Nil, right : Nil, toLeft : true } l
+
     split { left, right, toLeft : true } a =
       { left : Cons a left, right, toLeft : false }
     split { left, right, toLeft : false } a =
