@@ -5,7 +5,7 @@ import Prelude
 
 sort :: ∀ a. Ord a => MyList a -> MyList a
 sort Nil = Nil
-sort (Cons a Nil) = a : nil
+sort (a : Nil) = a : Nil
 sort list =
   merge (sort left) (sort right)
   where
@@ -13,14 +13,11 @@ sort list =
 
 
 merge :: ∀ a. Ord a => MyList a -> MyList a -> MyList a
-merge a b =
-  merge' a b Nil
+merge la lb =
+  merge' la lb Nil
   where
-    merge' :: ∀ a. Ord a => MyList a -> MyList a -> MyList a -> MyList a
+    merge' :: ∀ x. Ord x => MyList x -> MyList x -> MyList x -> MyList x
     merge' a Nil acc = acc <> a
     merge' Nil b acc = acc <> b
-    merge' aall @ (Cons a arest) ball @ (Cons b brest) acc =
-      case compare a b of
-        LT -> acc <> (Cons a $ merge arest ball)
-        GT -> acc <> (Cons b $ merge brest aall)
-        EQ -> acc <> (Cons a $ merge arest ball)
+    merge' (a : as) ball @ (b : _) acc | a < b = a : merge as ball
+    merge' aall (b : bs) acc = b : merge bs aall
