@@ -3,19 +3,32 @@ module MyList where
 import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Monoid (class Monoid, mempty)
 
-import Prelude (class Show, show, (<>))
-
+import Prelude
 
 data MyList a
   = Nil
   | Cons a (MyList a)
 
 mine :: MyList Int
-mine = Cons 1 (Cons 2 (Cons 3 Nil))
+mine = 1 : 2 : 3 : nil
 
--- bisect :: ∀ a. MyList a -> { left :: MyList a, right :: MyList a }
--- bisect =
---   foldl (\acc curr -> acc) { left = Nil, right = Nil}
+cons :: ∀ a. a -> MyList a -> MyList a
+cons = Cons
+
+nil :: ∀ a. MyList a
+nil = Nil
+
+infixr 6 cons as :
+
+bisect :: ∀ a. MyList a -> { left :: MyList a, right :: MyList a }
+bisect l =
+  { left : f.left, right: f.right }
+  where
+    f = foldl split { left : Nil, right : Nil, toLeft : true } l
+    split { left, right, toLeft : true } a =
+      { left : Cons a left, right, toLeft : false }
+    split { left, right, toLeft : false } a =
+      { left, right : Cons a right, toLeft : true }
 
 
 -- No need to implement length... we get it for free from Data.Foldable
@@ -29,6 +42,16 @@ instance showMyList :: Show a => Show (MyList a) where
       show' Nil = ""
       show' (Cons a Nil) = show a
       show' (Cons a list) = show a <> "," <> show' list
+
+instance semiGroupMyList :: Semigroup (MyList a) where
+  append :: ∀ a. MyList a -> MyList a -> MyList a
+  append a Nil = a
+  append Nil b = b
+  append (Cons a Nil) b =
+    Cons a b
+  append (Cons a resta) b =
+    Cons a $ append resta b
+
 
 instance foldMyList :: Foldable MyList where
   foldl :: ∀ a b. (b -> a -> b) -> b -> MyList a -> b
